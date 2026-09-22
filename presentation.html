@@ -424,103 +424,53 @@
 
 <div class="progress-bar" id="pbar"></div>
 
-<!-- ─── Notes drawer (works from file://, no server needed) ─── -->
-<div id="notes-drawer">
-  <div id="notes-header">
-    <span id="notes-label">SPEAKER NOTES</span>
-    <span id="notes-hint">press N to toggle</span>
-    <button id="notes-close" onclick="toggleNotes()" aria-label="Close notes">✕</button>
-  </div>
-  <div id="notes-body"></div>
-</div>
-<button id="notes-fab" onclick="toggleNotes()" title="Toggle speaker notes (N)">N</button>
+<!-- ─── Speaker notes launcher button (opens separate presenter window) ─── -->
+<button id="notes-launcher" onclick="openNotesWindow()" title="Open Speaker Notes Window (Press S or N)">
+  <span class="dot"></span>
+  <span>SPEAKER NOTES</span>
+  <span class="key">[S]</span>
+</button>
 
 <style>
-  #notes-drawer {
-    display: none;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: 32vh;
-    background: #1a1a20;
-    color: #e8e4dc;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: .8rem;
-    line-height: 1.7;
-    z-index: 1000;
-    border-top: 2px solid #c0392b;
-    flex-direction: column;
-  }
-  #notes-drawer.open { display: flex; }
-  #notes-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: .45rem 1.2rem;
-    background: #0f0f12;
-    border-bottom: 1px solid #333;
-    flex-shrink: 0;
-  }
-  #notes-label {
-    font-size: .62rem;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    color: #c0392b;
-    font-weight: 600;
-  }
-  #notes-hint {
-    font-size: .62rem;
-    letter-spacing: .08em;
-    color: #555;
-  }
-  #notes-close {
-    margin-left: auto;
-    background: none;
-    border: none;
-    color: #666;
-    cursor: pointer;
-    font-size: .9rem;
-    padding: 0 .2rem;
-    line-height: 1;
-  }
-  #notes-close:hover { color: #e8e4dc; }
-  #notes-body {
-    padding: .8rem 1.4rem 1rem;
-    overflow-y: auto;
-    flex: 1;
-    white-space: pre-wrap;
-  }
-  #notes-body .timing {
-    color: #f0c040;
-    font-size: .72rem;
-    margin-bottom: .4rem;
-    display: block;
-  }
-  #notes-body .cue {
-    color: #27ae60;
-    font-weight: 600;
-  }
-  #notes-fab {
+  #notes-launcher {
     position: fixed;
     bottom: 1.1rem;
-    right: 1.1rem;
-    width: 2.2rem;
-    height: 2.2rem;
-    border-radius: 50%;
-    background: #1a1a20;
-    border: 1.5px solid #444;
-    color: #888;
+    right: 1.2rem;
+    background: #17171e;
+    border: 1px solid #383846;
+    color: #b0afb8;
     font-family: 'JetBrains Mono', monospace;
-    font-size: .75rem;
+    font-size: 0.72rem;
     font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
     cursor: pointer;
     z-index: 999;
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: border-color .2s, color .2s;
+    gap: 0.5rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    transition: all 0.2s ease;
   }
-  #notes-fab:hover { border-color: #c0392b; color: #e8e4dc; }
-  body.notes-open .reveal-viewport { bottom: 32vh; }
+  #notes-launcher:hover {
+    background: #22222d;
+    border-color: #c0392b;
+    color: #fff;
+    transform: translateY(-1px);
+  }
+  #notes-launcher .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #c0392b;
+    display: inline-block;
+  }
+  #notes-launcher .key {
+    color: #6a6a78;
+    font-size: 0.68rem;
+    font-weight: 500;
+  }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
@@ -685,23 +635,352 @@ Conclude the session:
 "Our objective is simple: make hidden interface decisions visible and inspectable. Thank you."`
   ];
 
-  /* ── Notes panel logic ── */
-  let notesOpen = false;
-  const drawer  = document.getElementById('notes-drawer');
-  const body    = document.getElementById('notes-body');
+  /* ── Slide Metadata ── */
+  const SLIDE_META = [
+    { num: "01 / 09", title: "Frame & Supplied Facts", timing: "0:00–1:30" },
+    { num: "02 / 09", title: "Oakland News Reader (Neutral)", timing: "1:30–2:45" },
+    { num: "03 / 09", title: "Annotated Breakdown (N-C1-1)", timing: "2:45–4:30" },
+    { num: "04 / 09", title: "Guardrailed Condition (C2 Ban)", timing: "4:30–5:30" },
+    { num: "05 / 09", title: "Side-by-Side Comparison", timing: "5:30–7:30" },
+    { num: "06 / 09", title: "Complete Results Grid (8 Runs)", timing: "7:30–10:00" },
+    { num: "07 / 09", title: "Audience Classification Exercise", timing: "10:00–12:30" },
+    { num: "08 / 09", title: "Closing Claim & The Audit Gap", timing: "12:30–14:15" },
+    { num: "09 / 09", title: "Discussion & Next Steps", timing: "14:15–15:00" }
+  ];
 
-  function toggleNotes() {
-    notesOpen = !notesOpen;
-    drawer.classList.toggle('open', notesOpen);
-    document.body.classList.toggle('notes-open', notesOpen);
-    if (notesOpen) updateNotes();
+  /* ── Speaker Notes Popup Window Logic ── */
+  let notesWin = null;
+  let elapsedSeconds = 0;
+  let timerRunning = false;
+  let timerInterval = null;
+
+  function startTimer() {
+    if (!timerRunning) {
+      timerRunning = true;
+      timerInterval = setInterval(() => {
+        elapsedSeconds++;
+        updateTimerDisplay();
+      }, 1000);
+    }
   }
 
-  function updateNotes() {
+  function resetTimer() {
+    elapsedSeconds = 0;
+    updateTimerDisplay();
+  }
+
+  function toggleTimer() {
+    if (timerRunning) {
+      clearInterval(timerInterval);
+      timerRunning = false;
+    } else {
+      startTimer();
+    }
+    updateTimerDisplay();
+  }
+
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }
+
+  function updateTimerDisplay() {
+    if (notesWin && !notesWin.closed) {
+      const el = notesWin.document.getElementById('timer-display');
+      const btn = notesWin.document.getElementById('btn-play-pause');
+      if (el) el.textContent = formatTime(elapsedSeconds);
+      if (btn) btn.textContent = timerRunning ? 'Pause' : 'Start';
+    }
+  }
+
+  function openNotesWindow() {
+    startTimer();
+    if (notesWin && !notesWin.closed) {
+      notesWin.focus();
+      updateNotesWindow();
+      return;
+    }
+
+    notesWin = window.open('', 'PresenterNotes', 'width=840,height=750,left=100,top=100,scrollbars=yes,resizable=yes');
+    if (!notesWin) {
+      alert("Popup was blocked by your browser. Please allow popups for this page to open the separate Speaker Notes window.");
+      return;
+    }
+
+    const doc = notesWin.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Presenter Console — Dark Patterns, Generated</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #101015;
+      color: #e5e3dc;
+      font-family: 'Inter', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+    header {
+      background: #17171f;
+      border-bottom: 2px solid #c0392b;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .brand-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #fff;
+    }
+    .brand-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: #888;
+      letter-spacing: 0.04em;
+    }
+    .timer-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #0c0c10;
+      padding: 5px 12px;
+      border-radius: 4px;
+      border: 1px solid #282834;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .timer-val {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #f0c040;
+      min-width: 4.4rem;
+      text-align: center;
+    }
+    .timer-target {
+      font-size: 0.72rem;
+      color: #666;
+    }
+    .timer-btn {
+      background: #252532;
+      border: 1px solid #404055;
+      color: #bbb;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      padding: 3px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .timer-btn:hover { background: #353547; color: #fff; }
+
+    .nav-bar {
+      background: #14141a;
+      border-bottom: 1px solid #252530;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .slide-badge-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .badge-num {
+      background: rgba(192, 57, 43, 0.2);
+      border: 1px solid rgba(192, 57, 43, 0.4);
+      color: #e74c3c;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 3px;
+    }
+    .slide-title-text {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .slide-timing-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: #f0c040;
+      background: rgba(240, 192, 64, 0.1);
+      border: 1px solid rgba(240, 192, 64, 0.25);
+      padding: 2px 7px;
+      border-radius: 3px;
+      margin-left: 6px;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .nav-btn {
+      background: #20202c;
+      border: 1px solid #3a3a4c;
+      color: #ddd;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+    .nav-btn:hover {
+      background: #c0392b;
+      border-color: #c0392b;
+      color: #fff;
+    }
+
+    main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px;
+      line-height: 1.7;
+      font-size: 1.05rem;
+      user-select: text;
+    }
+    #notes-content {
+      white-space: pre-wrap;
+      font-family: 'Inter', system-ui, sans-serif;
+      color: #d8d6ce;
+      max-width: 68ch;
+      font-size: 1.02rem;
+      line-height: 1.75;
+    }
+
+    footer {
+      background: #14141a;
+      border-top: 1px solid #252530;
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: #777;
+      flex-shrink: 0;
+    }
+    .next-preview {
+      color: #aaa;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70%;
+    }
+    .next-preview strong {
+      color: #c0392b;
+    }
+    .key-shortcuts {
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-title">PRESENTER CONSOLE</div>
+      <div class="brand-sub">TBD-CON · 15 MIN TALK</div>
+    </div>
+    <div class="timer-container">
+      <span class="timer-val" id="timer-display">00:00</span>
+      <span class="timer-target">/ 15:00</span>
+      <button class="timer-btn" id="btn-play-pause">Start</button>
+      <button class="timer-btn" id="btn-reset">Reset</button>
+    </div>
+  </header>
+
+  <div class="nav-bar">
+    <div class="slide-badge-box">
+      <span class="badge-num" id="slide-num-badge">01 / 09</span>
+      <span class="slide-title-text" id="slide-title-display">Frame</span>
+      <span class="slide-timing-badge" id="slide-timing-display">0:00–1:30</span>
+    </div>
+    <div class="nav-buttons">
+      <button class="nav-btn" id="btn-prev">← Prev</button>
+      <button class="nav-btn" id="btn-next">Next →</button>
+    </div>
+  </div>
+
+  <main id="main-scroll">
+    <div id="notes-content"></div>
+  </main>
+
+  <footer>
+    <div class="next-preview" id="next-preview-display">Next: 02 / 09</div>
+    <div class="key-shortcuts">Keys: Space / Arrows navigate main screen</div>
+  </footer>
+</body>
+</html>`);
+    doc.close();
+
+    doc.getElementById('btn-prev').onclick = () => window.Reveal.prev();
+    doc.getElementById('btn-next').onclick = () => window.Reveal.next();
+    doc.getElementById('btn-play-pause').onclick = () => toggleTimer();
+    doc.getElementById('btn-reset').onclick = () => resetTimer();
+
+    doc.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        window.Reveal.next();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        window.Reveal.prev();
+      }
+    });
+
+    updateNotesWindow();
+    updateTimerDisplay();
+  }
+
+  function updateNotesWindow() {
+    if (!notesWin || notesWin.closed) return;
+    const doc = notesWin.document;
     const idx = Reveal.getIndices().h;
-    const txt = NOTES[idx] || '(No notes for this slide.)';
-    body.textContent = txt;
-    body.scrollTop = 0;
+    const meta = SLIDE_META[idx] || { num: `${idx + 1}`, title: "Slide", timing: "" };
+    const nextMeta = SLIDE_META[idx + 1] || null;
+
+    const numBadge = doc.getElementById('slide-num-badge');
+    const titleEl  = doc.getElementById('slide-title-display');
+    const timeEl   = doc.getElementById('slide-timing-display');
+    const contentEl= doc.getElementById('notes-content');
+    const nextEl   = doc.getElementById('next-preview-display');
+    const mainEl   = doc.getElementById('main-scroll');
+
+    if (numBadge)  numBadge.textContent = meta.num;
+    if (titleEl)   titleEl.textContent = meta.title;
+    if (timeEl)    timeEl.textContent = meta.timing;
+    if (contentEl) contentEl.textContent = NOTES[idx] || "(No notes for this slide.)";
+    if (mainEl)    mainEl.scrollTop = 0;
+
+    if (nextEl) {
+      if (nextMeta) {
+        nextEl.innerHTML = `Next: <strong>${nextMeta.num}</strong> ${nextMeta.title} (${nextMeta.timing})`;
+      } else {
+        nextEl.innerHTML = `<strong>End of presentation</strong>`;
+      }
+    }
   }
 
   /* ── Reveal init ── */
@@ -720,8 +999,10 @@ Conclude the session:
     minScale: 0.3,
     maxScale: 1.5,
     keyboard: {
-      78: () => toggleNotes(),   // N
-      110: () => toggleNotes(),  // n
+      83: () => openNotesWindow(),   // S
+      115: () => openNotesWindow(),  // s
+      78: () => openNotesWindow(),   // N
+      110: () => openNotesWindow()   // n
     },
   });
 
@@ -730,9 +1011,8 @@ Conclude the session:
     const total = Reveal.getTotalSlides();
     const idx   = Reveal.getIndices().h + 1;
     pbar.style.width = (idx / total * 100) + '%';
-    if (notesOpen) updateNotes();
+    updateNotesWindow();
   });
-  pbar.style.width = (1 / Reveal.getTotalSlides() * 100) + '%';
-</script>
+  pbar.style.width = (1 / Reveal.getTotalSlides() * 100) + '%';</script>
 </body>
 </html>
