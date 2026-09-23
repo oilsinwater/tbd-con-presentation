@@ -596,6 +596,32 @@
       letter-spacing: .08em;
       text-transform: uppercase;
     }
+
+    /* ── "Things I like" on the title slide ── */
+    .likes {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .likes li {
+      font-size: .84rem;
+      line-height: 1.7;
+      color: #444;
+      display: flex;
+      gap: .7rem;
+    }
+
+    .likes span {
+      flex-shrink: 0;
+      width: 4.2rem;
+      font-family: var(--mono);
+      font-size: .6rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      padding-top: .28rem;
+    }
   </style>
 </head>
 
@@ -606,7 +632,7 @@
       <!-- ═══ SLIDE 1: ABOUT ME 0:00–1:00 ═══ -->
       <section>
         <span class="slide-num">01 / 14</span>
-        <span class="time-badge">0:00 → 0:40</span>
+        <span class="time-badge">0:00 → 0:55</span>
         <div style="display:flex; flex-direction:column; justify-content:center; height:100%; gap:0;">
           <div
             style="font-family:var(--mono); font-size:.75rem; letter-spacing:.14em; text-transform:uppercase; color:var(--mid); margin-bottom:.8rem;">
@@ -618,7 +644,17 @@
             Senior Tech Design Researcher ·
             <img src="assets/logos/superbloom.png" alt="Superbloom Design" style="height:1.35rem; display:block;" />
           </p>
-          <div style="width:3rem; height:2px; background:var(--accent); margin-bottom:1.4rem;"></div>
+          <div style="width:3rem; height:2px; background:var(--accent); margin-bottom:1.2rem;"></div>
+          <div style="margin-bottom:1.3rem; max-width:86ch;">
+            <div
+              style="font-family:var(--mono); font-size:.65rem; letter-spacing:.1em; text-transform:uppercase; color:var(--mid); margin-bottom:.45rem;">
+              Things I like</div>
+            <ul class="likes">
+              <li><span>Games</span>Cyberpunk 2077 · Marvel Rivals — Squirrel Girl, far too much</li>
+              <li><span>Screen</span>Dark Matter · Foundation · Darker than Black · Ergo Proxy · Ghost in the Shell</li>
+              <li><span>Reading</span>Sylvia Wynter · Frantz Fanon · Octavia Butler · and lately, the CCRU</li>
+            </ul>
+          </div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.6rem; align-items:start; max-width:72ch;">
             <div>
               <div
@@ -655,7 +691,7 @@
       <!-- ═══ SLIDE 2: WHAT I FOCUS ON 1:00–2:00 ═══ -->
       <section>
         <span class="slide-num">02 / 14</span>
-        <span class="time-badge">0:40 → 1:20</span>
+        <span class="time-badge">0:55 → 1:35</span>
         <h3>What I focus on at Superbloom</h3>
         <h2>Making products usable, accessible, and secure</h2>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; margin-top:1.2rem;">
@@ -698,7 +734,7 @@
       <!-- ═══ SLIDE 3: WHAT SPARKED THIS 2:00–3:30 ═══ -->
       <section>
         <span class="slide-num">03 / 14</span>
-        <span class="time-badge">1:20 → 2:40</span>
+        <span class="time-badge">1:35 → 2:45</span>
         <h3>How I got here</h3>
         <h2>It started with a design system, not a paper</h2>
         <div style="display:flex; gap:2.2rem; align-items:flex-start; margin-top:.9rem; flex-wrap:wrap;">
@@ -753,7 +789,7 @@
       <!-- ═══ SLIDE 4: THE SETUP — TWO BRIEFS 2:30–3:30 ═══ -->
       <section>
         <span class="slide-num">04 / 14</span>
-        <span class="time-badge">2:40 → 3:35</span>
+        <span class="time-badge">2:45 → 3:35</span>
         <h3>The experiment setup</h3>
         <h2>Two briefs. Two conditions. Eight generations.</h2>
         <p style="font-size:.85rem; color:var(--mid); margin:.4rem 0 .9rem; max-width:78ch;">
@@ -1389,7 +1425,7 @@
     /* ── Inline speaker notes (keyed 0-based by slide index) ── */
     const NOTES = [
       /* 0 — ABOUT ME */
-      `[0:00–0:40: ABOUT ME]
+      `[0:00–0:55: ABOUT ME]
 
 Introduce yourself directly. No preamble.
 
@@ -1401,11 +1437,18 @@ Focus areas — say the list, do not read the slide:
 Recent partners — name three or four, then move on:
 "Recent partners include OKTA, Mastodon, the Open Technology Fund, Mozilla Foundation, Interledger Foundation, and Lawrence Berkeley National Laboratory."
 
-Keep this to forty seconds. The evidence is the talk, not the bio. Berkeley Lab gets picked up properly on slide three, so do not dwell on it here.
+Things I like — this is the warm bit, so do not rush it and do not read the whole list. Pick one from each row and let the rest sit on the slide:
+"Cyberpunk 2077. And Marvel Rivals, which is the guilty one — I play Squirrel Girl far more than a grown adult should."
+"On screen it's Dark Matter, Foundation, and a lot of anime — Darker than Black, Ergo Proxy, Ghost in the Shell."
+"And on the page: Sylvia Wynter, Frantz Fanon, Octavia Butler, and lately I've been working through the CCRU."
+
+If you want one line to tie it to the talk, this is it: "Which is probably why I ended up looking at what machines write when nobody is watching."
+
+Keep the whole slide to about fifty-five seconds. The evidence is the talk, not the bio. Berkeley Lab gets picked up properly on slide three, so do not dwell on it here.
 `,
 
       /* 1 — WHAT I FOCUS ON */
-      `[0:40–1:20: WHAT I FOCUS ON]
+      `[0:55–1:35: WHAT I FOCUS ON]
 
 Four tiles. Do not read them. Pick the two that set up the talk.
 
@@ -1423,7 +1466,7 @@ Move on quickly.
 `,
 
       /* 2 — HOW I GOT HERE */
-      `[1:20–2:40: HOW I GOT HERE]
+      `[1:35–2:45: HOW I GOT HERE]
 
 This is the origin story, and it is not "I read a paper." Tell it as the sequence it actually was.
 
@@ -1450,7 +1493,7 @@ Three questions on the right. Read them as one breath, then:
 `,
 
       /* 3 — THE SETUP, TWO BRIEFS */
-      `[2:40–3:35: THE SETUP]
+      `[2:45–3:35: THE SETUP]
 
 Make the two-brief structure explicit. This is the thing that was unclear before.
 
@@ -1668,10 +1711,10 @@ Stop talking. Take questions.
     ];
 
     const SLIDE_META = [
-      { num: "01 / 14", title: "About Me", timing: "0:00–0:40" },
-      { num: "02 / 14", title: "What I Focus On", timing: "0:40–1:20" },
-      { num: "03 / 14", title: "How I Got Here — StrudelKit", timing: "1:20–2:40" },
-      { num: "04 / 14", title: "The Setup — Two Briefs", timing: "2:40–3:35" },
+      { num: "01 / 14", title: "About Me", timing: "0:00–0:55" },
+      { num: "02 / 14", title: "What I Focus On", timing: "0:55–1:35" },
+      { num: "03 / 14", title: "How I Got Here — StrudelKit", timing: "1:35–2:45" },
+      { num: "04 / 14", title: "The Setup — Two Briefs", timing: "2:45–3:35" },
       { num: "05 / 14", title: "The Guardrail & Scoring Key", timing: "3:35–4:15" },
       { num: "06 / 14", title: "First Result + The Exact Prompt", timing: "4:15–5:20" },
       { num: "07 / 14", title: "Audience Exercise", timing: "5:20–6:50" },
